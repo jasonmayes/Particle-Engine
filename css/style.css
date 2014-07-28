@@ -1,0 +1,52 @@
+body {
+  background-color:#1d1d1d;
+  margin:0;
+  padding:0;
+}
+
+canvas {
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
+}
+
+h1 {
+  text-align:center;
+  margin-top:50px;
+}
+
+h1, p, h2, a, h3 {
+  font-family:Arial,"Liberation Sans",sans-serif;
+  color:#efefef;
+}
+
+p {
+  font-size:10pt;
+  font-style:italic;
+  color:#686868;
+  text-align:center;
+}
+
+#effectChanger {
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  width:250px;
+}
+
+#effectChanger p {
+  text-align:left;
+}
+
+#linkage {
+  position:fixed;
+  top:145px;
+  right:0px;
+  background-color:#2d2d3d;
+  color:#ffffff;
+  text-decoration:none;
+  padding:10px;
+  width:100px;
+}
