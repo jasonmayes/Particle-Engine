@@ -9,11 +9,12 @@ Just playing with particles. Hopefully this will inspire others to try stuff lik
 
 Please read comments in JavaScript for examples on how to use.
 
-Here is a video of it in action:
-[![View Video](http://www.jasonmayes.com/projects/particleEngine/youtube.jpg)](https://www.youtube.com/watch?v=cbV4SQ_VYtY)
-
 A live demo is available on my website - check out the several different example particle effects I made up quickly - totally customizable in minutes:
 http://jasonmayes.com/projects/particleEngine/
+
+Here is a video of it in action:
+
+[![View Video](http://www.jasonmayes.com/projects/particleEngine/youtube.jpg)](https://www.youtube.com/watch?v=cbV4SQ_VYtY)
 
 Some screen shots of example particle effects I made using this engine in a matter of minutes:
 ![Simple Particle Engine Example](https://lh3.googleusercontent.com/-r552LeEEQFA/U4N3ccpnIeI/AAAAAAAAZWY/RIH8DE-vMMo/w1122-h958-no/SizeVsAge.png "Simple Particle Engine Example")
