@@ -187,7 +187,7 @@ function particleGenerator5() {
 // Generate emitters using the particle generator function defined above.
 var emit1 = jmParticleEngine.generateEmitter(Math.ceil(window.innerWidth / 4),
     Math.ceil(window.innerHeight / 2), 1500, particleGenerator5);
-emit1.preloadImage('http://www.jasonmayes.com/corsImgs/fire2.png');
+emit1.preloadImage('https://storage.googleapis.com/jm-cors/images/fire2.png');
 
 var emit2 = jmParticleEngine.generateEmitter(Math.ceil(window.innerWidth / 4),
     Math.ceil(window.innerHeight / 2), 5000, particleGenerator2);
