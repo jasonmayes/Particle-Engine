@@ -1,7 +1,6 @@
 /* Lets use this sweet engine! Example usage below! */
 
-// Initiate engine to draw to DOM canvas with id "myCanvas" and detail its
-// dimensions.
+// Initiate engine to draw to DOM canvas with id "myCanvas" and detail its dimensions.
 jmParticleEngine.init('myCanvas', window.innerWidth, window.innerHeight);
 
 // Define a particle generators - each generates particles of one particle type.
@@ -185,25 +184,20 @@ function particleGenerator5() {
 }
 
 // Generate emitters using the particle generator function defined above.
-var emit1 = jmParticleEngine.generateEmitter(Math.ceil(window.innerWidth / 4),
-    Math.ceil(window.innerHeight / 2), 1500, particleGenerator5);
+var emit1 = jmParticleEngine.generateEmitter(Math.ceil(window.innerWidth / 4), Math.ceil(window.innerHeight / 2), 1500, particleGenerator5);
 emit1.preloadImage('https://storage.googleapis.com/jm-cors/images/fire2.png');
 
-var emit2 = jmParticleEngine.generateEmitter(Math.ceil(window.innerWidth / 4),
-    Math.ceil(window.innerHeight / 2), 5000, particleGenerator2);
+// We can also pass custom Canvas Context if we want to draw to a different canvas.
+const customContext = document.getElementById('myCanvas').getContext('2d');
+var emit2 = jmParticleEngine.generateEmitter(Math.ceil(window.innerWidth / 4), Math.ceil(window.innerHeight / 2), 5000, particleGenerator2, customContext);
 
-var emit3 = jmParticleEngine.generateEmitter(Math.ceil(window.innerWidth / 4),
-    Math.ceil(window.innerHeight / 2), 5000, particleGenerator3);
+var emit3 = jmParticleEngine.generateEmitter(Math.ceil(window.innerWidth / 4), Math.ceil(window.innerHeight / 2), 5000, particleGenerator3);
 
-var emit4 = jmParticleEngine.generateEmitter(Math.ceil(window.innerWidth / 4),
-    Math.ceil(window.innerHeight / 2), 5000, particleGenerator4);
+var emit4 = jmParticleEngine.generateEmitter(Math.ceil(window.innerWidth / 4), Math.ceil(window.innerHeight / 2), 5000, particleGenerator4);
 
-var emit5 = jmParticleEngine.generateEmitter(Math.ceil(window.innerWidth / 4),
-    Math.ceil(window.innerHeight / 2), 5000, particleGenerator1);
+var emit5 = jmParticleEngine.generateEmitter(Math.ceil(window.innerWidth / 4), Math.ceil(window.innerHeight / 2), 5000, particleGenerator1);
 
-var emitTmp =
-    jmParticleEngine.generateEmitter(Math.ceil((window.innerWidth / 4) * 3),
-    Math.ceil(window.innerHeight / 2), 750, particleGenerator1);
+var emitTmp = jmParticleEngine.generateEmitter(Math.ceil((window.innerWidth / 4) * 3), Math.ceil(window.innerHeight / 2), 750, particleGenerator1);
 
 // Add emitters to engine! Ensure emit1 and emitTmp start
 // straight away.
