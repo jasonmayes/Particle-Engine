@@ -3,7 +3,7 @@
 *  Coded by Jason Mayes 2014. www.jasonmayes.com
 *  Please keep this disclaimer with my code if you use it. Thanks. :-)
 *  Got feedback or questions, ask here:
-*  http://plus.google.com/+JasonMayes/posts
+*  https://plus.google.com/+JasonMayes/posts
  * Updates will be posted to this site:
  * http://www.jasonmayes.com/projects/particleEngine/
  * Or see Github:
@@ -76,8 +76,10 @@ var jmParticleEngine = function() {
    * @param {Number} m  Enforce a hard limit on the number of displayable
    *    particles at any given time. Default is 500.
    * @param {Function} p Particle generator function which returns a new particle.
+   * @param {CanvasRenderingContext2D=} ctx Optional. The canvas context we want to render to.
    */
-  function Emitter(x, y, m, p) {
+  function Emitter(x, y, m, p, ctx_) {
+    this.ctx = ctx || ctx_;
     this.x = x;
     this.y = y;
     this.maxParticles = m || 500;
@@ -94,6 +96,10 @@ var jmParticleEngine = function() {
 
   Emitter.prototype.stop = function() {
     this.emit = false;
+  };
+  
+  Emitter.prototype.fetchCtx = function() {
+    return this.ctx;
   };
 
   Emitter.prototype.preloadImage = function(url) {
@@ -165,35 +171,34 @@ var jmParticleEngine = function() {
    * @param {Particle} particle The particle we wish to draw.
    * @param {Number} width The calculated width of the particle at a given point in life.
    * @param {Number} height The calculated height of the particle at a given point in life.
-   * @param {Image} image Optional. The image we wish to draw as the particle.
-   *     If no image specified we draw a rectangle instead.
+   * @param {Image} image Optional. The image we wish to draw as the particle. If no image specified we draw a rectangle instead.
    */
-  function renderParticle(particle, width, height, image) {
+  function renderParticle(canvasCtx, particle, width, height, image) {
     // Only rotate if rotation is applied.
     if (particle.rotation !== 0) {
       // Save context so we can revert to it later.
-      ctx.save();
+      canvasCtx.save();
       // Move to where we want to draw our image.
-      ctx.translate(particle.x, particle.y);
+      canvasCtx.translate(particle.x, particle.y);
       // Rotate around that point.
-      ctx.rotate(particle.rotation);
+      canvasCtx.rotate(particle.rotation);
 
       if (image !== undefined) {
         // Draw the image about its centre.
-        ctx.drawImage(image, -width / 2, -height / 2, width, height);
+        canvasCtx.drawImage(image, -width / 2, -height / 2, width, height);
       } else {
         // Draw rectangle.
-        ctx.fillRect(-width / 2, -height / 2, width, height);
+        canvasCtx.fillRect(-width / 2, -height / 2, width, height);
       }
       // Restore context to how it was before.
-      ctx.restore();
+      canvasCtx.restore();
     } else {
       if (image !== undefined) {
         // Draw the image about its centre.
-        ctx.drawImage(image, particle.x, particle.y, width, height);
+        canvasCtx.drawImage(image, particle.x, particle.y, width, height);
       } else {
         // Draw rectangle.
-        ctx.fillRect(particle.x, particle.y, width, height);
+        canvasCtx.fillRect(particle.x, particle.y, width, height);
       }
     }
   }
@@ -204,9 +209,6 @@ var jmParticleEngine = function() {
    *    requestAnimationFrame request.
    */
   function particleLoop(time) {
-    // Clear the canvas.
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
     // Now lets iterate through all emitters.
     var n = emitters.length;
     // Avoid re-declaring width and height tmp vars.
@@ -214,6 +216,8 @@ var jmParticleEngine = function() {
     var height = 0;
 
     while (n--) {
+      // Clear the canvas.
+      emitters[n].fetchCtx().clearRect(0, 0, canvas.width, canvas.height);
       // Ensure we uphold maximum particle count.
       if (emitters[n].particles.length === emitters[n].maxParticles) {
         emitters[n].particles.shift();
@@ -253,17 +257,17 @@ var jmParticleEngine = function() {
 
           // If we are not trying to render an image particle then draw rectangle.
           if (emitters[n].particles[i].image === undefined) {
-            ctx.fillStyle = 'rgba(' + emitters[n].particles[i].r + ',' + emitters[n].particles[i].g + ',' + emitters[n].particles[i].b + ', 1)';
-            ctx.globalAlpha = (emitters[n].particles[i].life / emitters[n].particles[i].maxLife);
+            emitters[n].fetchCtx().fillStyle = 'rgba(' + emitters[n].particles[i].r + ',' + emitters[n].particles[i].g + ',' + emitters[n].particles[i].b + ', 1)';
+            emitters[n].fetchCtx().globalAlpha = (emitters[n].particles[i].life / emitters[n].particles[i].maxLife);
             // Render particle as rectangle.
-            renderParticle(emitters[n].particles[i], width, height);
+            renderParticle(emitters[n].fetchCtx(), emitters[n].particles[i], width, height);
           } else {
             // Otherwise lets ensure image has been defined and loaded and draw it.
             if (emitters[n].images[emitters[n].particles[i].image] !== undefined) {
               if (emitters[n].images[emitters[n].particles[i].image].loaded) {
-                ctx.globalAlpha = (emitters[n].particles[i].life / emitters[n].particles[i].maxLife);
+                emitters[n].fetchCtx().globalAlpha = (emitters[n].particles[i].life / emitters[n].particles[i].maxLife);
                 // Render particle as image.
-                renderParticle(emitters[n].particles[i], width, height, emitters[n].images[emitters[n].particles[i].image].image);
+                renderParticle(emitters[n].fetchCtx(), emitters[n].particles[i], width, height, emitters[n].images[emitters[n].particles[i].image].image);
               }
             }
           }
@@ -360,3 +364,262 @@ var jmParticleEngine = function() {
     attachHandler: attachHandler_
   };
 }();
+
+
+
+
+/* Lets use this sweet engine! Example usage below! */
+
+// Initiate engine to draw to DOM canvas with id "myCanvas" and detail its dimensions.
+jmParticleEngine.init('myCanvas', window.innerWidth, window.innerHeight);
+
+// Define a particle generators - each generates particles of one particle type.
+function particleGenerator1() {
+  var size = jmParticleEngine.randomNumber(2, undefined, true);
+  // Note context of this is bound to the emitter calling the function,
+  // so we can simply grab the emitter's x and y for its starting point.
+  return jmParticleEngine.generateParticle(
+      // Start at the emitter's x co-ordinate.
+      this.x,
+      // Start at the emitter's y co-ordinate.
+      this.y,
+      // Width.
+      size,
+      // Height.
+      size,
+      // Rotation.
+      0,
+      // xVelocity.
+      jmParticleEngine.randomNumber(15, 7.5, false),
+      // yVelocity.
+      jmParticleEngine.randomNumber(15, 7.5, false),
+      // Life.
+      120,
+      // How will particle change size vs life.
+      // 0 - no change, same size always.
+      // 1 - smaller with age.
+      // 2 - larger with age.
+      0,
+      // Red.
+      jmParticleEngine.randomNumber(191, -64, true),
+      // Green.
+      jmParticleEngine.randomNumber(191, -64, true),
+      // Blue.
+      jmParticleEngine.randomNumber(191, -64, true)
+  );
+}
+
+function particleGenerator2() {
+  var size = jmParticleEngine.randomNumber(20, undefined, true);
+  // Note context of this is bound to the emitter calling the function,
+  // so we can simply grab the emitter's x and y for its starting point.
+  return jmParticleEngine.generateParticle(
+      // Start at the emitter's x co-ordinate.
+      this.x,
+      // Start at the emitter's y co-ordinate.
+      this.y,
+      // Width.
+      size,
+      // Height.
+      size,
+      // Rotation.
+      0,
+      // xVelocity.
+      jmParticleEngine.randomNumber(15, 7.5, false),
+      // yVelocity.
+      jmParticleEngine.randomNumber(15, 7.5, false),
+      // Life.
+      64,
+      // How will particle change size vs life.
+      // 0 - no change, same size always.
+      // 1 - smaller with age.
+      // 2 - larger with age.
+      0,
+      // Red.
+      jmParticleEngine.randomNumber(255, 0, true),
+      // Green.
+      jmParticleEngine.randomNumber(64, 0, true),
+      // Blue.
+      jmParticleEngine.randomNumber(32, 0, true)
+  );
+}
+
+function particleGenerator3() {
+  var size1 = jmParticleEngine.randomNumber(3, undefined, true);
+  var size2 = jmParticleEngine.randomNumber(100, undefined, true);
+  // Note context of this is bound to the emitter calling the function,
+  // so we can simply grab the emitter's x and y for its starting point.
+  return jmParticleEngine.generateParticle(
+      // Start at the emitter's x co-ordinate.
+      this.x +  jmParticleEngine.randomNumber(1000, 500, false),
+      // Start at the emitter's y co-ordinate.
+      this.y,
+      // Width.
+      size1,
+      // Height.
+      size2,
+      // Rotation.
+      0,
+      // xVelocity.
+      jmParticleEngine.randomNumber(1, 1, false),
+      // yVelocity.
+      jmParticleEngine.randomNumber(30, 0, false),
+      // Life.
+      60,
+      // How will particle change size vs life.
+      // 0 - no change, same size always.
+      // 1 - smaller with age.
+      // 2 - larger with age.
+      1,
+      // Red.
+      jmParticleEngine.randomNumber(32, 0, true),
+      // Green.
+      jmParticleEngine.randomNumber(50, 0, true),
+      // Blue.
+      jmParticleEngine.randomNumber(255, 0, true)
+  );
+}
+
+function particleGenerator4() {
+  var size = jmParticleEngine.randomNumber(128, undefined, true);
+  var grey = jmParticleEngine.randomNumber(255, 0, true);
+  // Note context of this is bound to the emitter calling the function,
+  // so we can simply grab the emitter's x and y for its starting point.
+  return jmParticleEngine.generateParticle(
+      // Start at the emitter's x co-ordinate.
+      this.x,
+      // Start at the emitter's y co-ordinate.
+      this.y,
+      // Width.
+      size,
+      // Height.
+      size,
+      // Rotation.
+      0,
+      // xVelocity.
+      jmParticleEngine.randomNumber(15, 7.5, false),
+      // yVelocity.
+      jmParticleEngine.randomNumber(15, 7.5, false),
+      // Life.
+      42,
+      // How will particle change size vs life.
+      // 0 - no change, same size always.
+      // 1 - smaller with age.
+      // 2 - larger with age.
+      0,
+      // Red.
+      grey,
+      // Green.
+      grey,
+      // Blue.
+      grey
+  );
+}
+
+function particleGenerator5() {
+  var size = jmParticleEngine.randomNumber(128, -64, true);
+  // Note context of this is bound to the emitter calling the function,
+  // so we can simply grab the emitter's x and y for its starting point.
+  return jmParticleEngine.generateParticle(
+      // Start at the emitter's x co-ordinate.
+      this.x ,
+      // Start at the emitter's y co-ordinate.
+      this.y ,
+      // Width.
+      size,
+      // Height.
+      size,
+      // Rotation.
+      jmParticleEngine.randomNumber(Math.PI * 2, 0, false),
+      // xVelocity.
+      jmParticleEngine.randomNumber(18, 9, false),
+      // yVelocity.
+      jmParticleEngine.randomNumber(18, 9, false),
+      // Life.
+      64,
+      // How will particle change size vs life.
+      // 0 - no change, same size always.
+      // 1 - smaller with age.
+      // 2 - larger with age.
+      0,
+      // Red.
+      0,
+      // Green.
+      0,
+      // Blue.
+      0,
+      // If we wish to use a preloaded image, specify index here.
+      0
+  );
+}
+
+// Generate emitters using the particle generator function defined above.
+var emit1 = jmParticleEngine.generateEmitter(Math.ceil(window.innerWidth / 4), Math.ceil(window.innerHeight / 2), 1500, particleGenerator5);
+emit1.preloadImage('https://storage.googleapis.com/jm-cors/images/fire2.png');
+
+var emit2 = jmParticleEngine.generateEmitter(Math.ceil(window.innerWidth / 4), Math.ceil(window.innerHeight / 2), 5000, particleGenerator2);
+
+var emit3 = jmParticleEngine.generateEmitter(Math.ceil(window.innerWidth / 4), Math.ceil(window.innerHeight / 2), 5000, particleGenerator3);
+
+var emit4 = jmParticleEngine.generateEmitter(Math.ceil(window.innerWidth / 4), Math.ceil(window.innerHeight / 2), 5000, particleGenerator4);
+
+var emit5 = jmParticleEngine.generateEmitter(Math.ceil(window.innerWidth / 4), Math.ceil(window.innerHeight / 2), 5000, particleGenerator1);
+
+var emitTmp = jmParticleEngine.generateEmitter(Math.ceil((window.innerWidth / 4) * 3), Math.ceil(window.innerHeight / 2), 750, particleGenerator1);
+
+// Add emitters to engine! Ensure emit1 and emitTmp start
+// straight away.
+jmParticleEngine.addEmitter(emit1, true);
+jmParticleEngine.addEmitter(emit2);
+jmParticleEngine.addEmitter(emit3);
+jmParticleEngine.addEmitter(emit4);
+jmParticleEngine.addEmitter(emit5);
+jmParticleEngine.addEmitter(emitTmp, true);
+
+// Attach emitters 1, 2, 3 and 4 to mouse position.
+jmParticleEngine.attachHandler('myCanvas', 'mousemove', function(e){
+  if (!e) {
+    e = window.event;
+  }
+  emit1.x = e.clientX;
+  emit1.y = e.clientY;
+  emit2.x = e.clientX;
+  emit2.y = e.clientY;
+  emit3.x = e.clientX;
+  emit3.y = e.clientY;
+  emit4.x = e.clientX;
+  emit4.y = e.clientY;
+  emit5.x = e.clientX;
+  emit5.y = e.clientY;
+});
+
+// Stop the second emitter after 5 seconds.
+setTimeout(function(){
+  emitTmp.stop();
+}, 5000);
+
+
+// Event listener for changing particle effect dropdown.
+jmParticleEngine.attachHandler('changer', 'change', function(e){
+  if (!e) {
+    e = window.event;
+  }
+  var sel = document.getElementById('changer');
+  var val = sel[sel.selectedIndex].value;
+  emit1.stop();
+  emit2.stop();
+  emit3.stop();
+  emit4.stop();
+  emit5.stop();
+  if (val === '1') {
+    emit1.start();
+  } else if (val === '2') {
+    emit2.start();
+  } else if (val === '3') {
+    emit3.start();
+  } else if (val === '4') {
+    emit4.start();
+  } else if (val === '5') {
+    emit5.start();
+  }
+});
