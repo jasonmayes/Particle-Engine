@@ -307,9 +307,10 @@ var jmParticleEngine = function() {
      * @param {Number} m  Enforce a hard limit on the number of displayable
      *    particles at any given time. Default is 500.
      * @param {Function} p Particle generator function to use which returns new particles.
+     * @param {CanvasRenderingContext2D=} ctx Optional. The canvas context we want to render to.
      */
-    generateEmitter: function(x, y, m, p) {
-      return new Emitter(x, y, m, p);
+    generateEmitter: function(x, y, m, p, c) {
+      return new Emitter(x, y, m, p, c);
     },
 
     /**
